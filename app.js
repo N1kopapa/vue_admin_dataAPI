@@ -16,13 +16,13 @@ const connection = mysql.createConnection({
     user: 'root',               //用户名
     password: 'wlzx5057',           //密码
     port : '3306',              //端口
-    database: 'chuanda',           //库名
+    database: 'final',           //库名
     multipleStatements:true     //允许执行多条语句
 })
 
 // 查询
-app.get('/api/project',(req,res,next) => {
-    const sql ='SELECT * FROM project'  //user为表名
+app.get('/api/user',(req,res,next) => {
+    const sql ='SELECT * FROM user'  //user为表名
     connection.query(sql,(err,results) =>{
         if(err){
             return res.json({
