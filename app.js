@@ -14,12 +14,12 @@ app.use(bodyParser.json())
 //使用mysql中间件连接MySQL数据库
 const mysql = require('mysql')
 const connection = mysql.createConnection({
-    host: '118.25.124.110', //数据库地址
-    user: 'root', //用户名
-    password: 'wlzx5057', //密码
-    port: '3306', //端口
-    database: 'final', //库名
-    multipleStatements: true //允许执行多条语句
+    host:'118.25.124.110',           //数据库地址
+    user: 'root',               //用户名
+    password: 'wlzx5057',           //密码
+    port : '3306',              //端口
+    database: 'final',           //库名
+    multipleStatements:true     //允许执行多条语句
 })
 
 // 用户查询
