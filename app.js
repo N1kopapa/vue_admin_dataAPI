@@ -6,44 +6,69 @@ app.use(cors())
 
 //body-parser 解析表单
 const bodyParser = require('body-parser')
-app.use(bodyParser.urlencoded({ extended:false}))
+app.use(bodyParser.urlencoded({
+    extended: false
+}))
 app.use(bodyParser.json())
 
 //使用mysql中间件连接MySQL数据库
 const mysql = require('mysql')
 const connection = mysql.createConnection({
-    host:'118.25.124.110',           //数据库地址
-    user: 'root',               //用户名
-    password: 'wlzx5057',           //密码
-    port : '3306',              //端口
-    database: 'chuanda',           //库名
-    multipleStatements:true     //允许执行多条语句
+    host: '118.25.124.110', //数据库地址
+    user: 'root', //用户名
+    password: 'wlzx5057', //密码
+    port: '3306', //端口
+    database: 'final', //库名
+    multipleStatements: true //允许执行多条语句
 })
 
-// 查询
-app.get('/api/project',(req,res,next) => {
-    const sql ='SELECT * FROM project'  //user为表名
-    connection.query(sql,(err,results) =>{
-        if(err){
+// 用户查询
+//所有用户
+app.get('/api/user', (req, res, next) => {
+    const sql = 'SELECT * FROM user' //user为表名
+    connection.query(sql, (err, results) => {
+        if (err) {
             return res.json({
                 code: 1,
                 message: err,
                 affextedRows: 0
             })
         }
-        res.json ({
-            code : 200,
+        res.json({
+            code: 200,
             message: results,
-            affextedRows:results.affextedRows
+            affextedRows: results.affextedRows
         })
     })
 })
 
+// 查询
+// 登录
+app.get('/api/username', (req, res, next) => {
+    const username = req.query.username
+    const password = req.query.password
+    const sql = 'SELECT * FROM user where userName = ? and passWord = ? ' //user为表名
+    const param = [username, password]
+    connection.query(sql, param, (err, results) => {
+        if (err) {
+            return res.json({
+                code: 1,
+                message: err,
+                affextedRows: 0
+            })
+        }
+        res.json({
+            code: 200,
+            message: results,
+            affextedRows: results.affextedRows
+        })
+    })
+})
 // 条件查询
-app.get('/api/body',(req,res) => {
+app.get('/api/body', (req, res) => {
     const id = req.query.id
     const sql = 'SELECT * FROM user where id=?'
-    connection.query(sql,id,(err,results) => {
+    connection.query(sql, id, (err, results) => {
         if (err) {
             return res.json({
                 code: 1,
@@ -51,19 +76,19 @@ app.get('/api/body',(req,res) => {
                 affextedRows: 0
             })
         }
-        res.json ({
+        res.json({
             code: 200,
             message: results,
-            affextedRows:results.affextedRows
+            affextedRows: results.affextedRows
         })
     })
 })
 
 //增加
-app.post('/api/adduser', (req,res) => {
+app.post('/api/adduser', (req, res) => {
     const user = req.body
     const addSql = 'INSERT INTO user SET ?'
-    connection.query(addSql,user,(err,results) => {
+    connection.query(addSql, user, (err, results) => {
         if (err) {
             return res.json({
                 code: 1,
@@ -71,22 +96,22 @@ app.post('/api/adduser', (req,res) => {
                 affextedRows: 0
             })
         }
-        res.json ({
+        res.json({
             code: 200,
             message: '添加成功',
-            affextedRows:results.affextedRows
+            affextedRows: results.affextedRows
         })
     })
 })
 
 //修改
-app.post('/api/updateuser',(req,res) => {
+app.post('/api/updateuser', (req, res) => {
     const user = []
     user[0] = req.body.userName
     user[1] = req.body.passWord
     user[2] = req.body.id
     const updateSql = 'UPDATE user SET userName = ?,passWord = ? WHERE Id = ?'
-    connection.query(updateSql,user,(err,results) => {
+    connection.query(updateSql, user, (err, results) => {
         if (err) {
             return res.json({
                 code: 1,
@@ -94,15 +119,63 @@ app.post('/api/updateuser',(req,res) => {
                 affextedRows: 0
             })
         }
-        res.json ({
+        res.json({
             code: 200,
             message: '修改成功',
-            affextedRows:results.affextedRows
+            affextedRows: results.affextedRows
         })
     })
 })
 
+//房子api
+// 房子分页，
+app.get('/api/house', (req, res) => {
+    const pageIndex = req.query.pageIndex
+    const pageSize = req.query.pageSize
+    const start = (pageIndex - 1) * pageSize
+    const end = pageIndex * pageSize
+    const sql = 'SELECT * FROM house where isDel=false limit ' + start + ',' + end;
+    connection.query(sql, (err, results) => {
+        if (err) {
+            return res.json({
+                code: 1,
+                message: '无房屋信息',
+                affextedRows: 0
+            })
+        }
+        res.json({
+            code: 200,
+            message: results,
+            affextedRows: results.affextedRows
+        })
+    })
+})
+app.get('/api/houseById', (req, res) => {
+    const pageIndex = req.query.pageIndex
+    const pageSize = req.query.pageSize
+    const start = (pageIndex - 1) * pageSize
+    const end = pageIndex * pageSize
+    const userId = req.query.userId
+    const sql = 'SELECT * FROM house where userId = ? and isDel=false limit ' + start + ',' + end;
+    const param = [userId]
+    connection.query(sql, param, (err, results) => {
+        if (err) {
+            return res.json({
+                code: 1,
+                message: '无房屋信息',
+                affextedRows: 0
+            })
+        }
+        res.json({
+            code: 200,
+            message: results,
+            affextedRows: results.affextedRows
+        })
+    })
+})
+
+
 //启动服务，端口3001
-app.listen(3001,() => {
-    console.log('服务启动成功:'+`http://localhost:3001/`)
+app.listen(3001, () => {
+    console.log('服务启动成功:' + `http://localhost:3001/`)
 })
