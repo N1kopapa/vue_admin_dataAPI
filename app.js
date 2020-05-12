@@ -14,12 +14,12 @@ app.use(bodyParser.json())
 //使用mysql中间件连接MySQL数据库
 const mysql = require('mysql')
 const connection = mysql.createConnection({
-    host:'118.25.124.110',           //数据库地址
-    user: 'root',               //用户名
-    password: 'wlzx5057',           //密码
-    port : '3306',              //端口
-    database: 'final',           //库名
-    multipleStatements:true     //允许执行多条语句
+    host: '118.25.124.110', //数据库地址
+    user: 'root', //用户名
+    password: 'wlzx5057', //密码
+    port: '3306', //端口
+    database: 'final', //库名
+    multipleStatements: true //允许执行多条语句
 })
 
 // 用户查询
@@ -42,7 +42,6 @@ app.get('/api/user', (req, res, next) => {
     })
 })
 
-// 查询
 // 登录
 app.get('/api/username', (req, res, next) => {
     const username = req.query.username
@@ -64,68 +63,8 @@ app.get('/api/username', (req, res, next) => {
         })
     })
 })
-// 条件查询
-app.get('/api/body', (req, res) => {
-    const id = req.query.id
-    const sql = 'SELECT * FROM user where id=?'
-    connection.query(sql, id, (err, results) => {
-        if (err) {
-            return res.json({
-                code: 1,
-                message: '无此用户',
-                affextedRows: 0
-            })
-        }
-        res.json({
-            code: 200,
-            message: results,
-            affextedRows: results.affextedRows
-        })
-    })
-})
 
-//增加
-app.post('/api/adduser', (req, res) => {
-    const user = req.body
-    const addSql = 'INSERT INTO user SET ?'
-    connection.query(addSql, user, (err, results) => {
-        if (err) {
-            return res.json({
-                code: 1,
-                message: '添加失败',
-                affextedRows: 0
-            })
-        }
-        res.json({
-            code: 200,
-            message: '添加成功',
-            affextedRows: results.affextedRows
-        })
-    })
-})
 
-//修改
-app.post('/api/updateuser', (req, res) => {
-    const user = []
-    user[0] = req.body.userName
-    user[1] = req.body.passWord
-    user[2] = req.body.id
-    const updateSql = 'UPDATE user SET userName = ?,passWord = ? WHERE Id = ?'
-    connection.query(updateSql, user, (err, results) => {
-        if (err) {
-            return res.json({
-                code: 1,
-                message: '修改失败',
-                affextedRows: 0
-            })
-        }
-        res.json({
-            code: 200,
-            message: '修改成功',
-            affextedRows: results.affextedRows
-        })
-    })
-})
 
 //房子api
 // 房子分页，
@@ -135,6 +74,22 @@ app.get('/api/house', (req, res) => {
     const start = (pageIndex - 1) * pageSize
     const end = pageIndex * pageSize
     const sql = 'SELECT * FROM house where isDel=false limit ' + start + ',' + end;
+    const sql1 = 'SELECT COUNT(*) as num FROM house where isDel=false';
+    const allResults = {
+        count: null,
+        data: null,
+
+    }
+    connection.query(sql1, (err, results) => {
+        if (err) {
+            return res.json({
+                code: 1,
+                message: '无房屋信息',
+                affextedRows: 0
+            })
+        }
+        allResults.count = results[0].num
+    })
     connection.query(sql, (err, results) => {
         if (err) {
             return res.json({
@@ -143,13 +98,15 @@ app.get('/api/house', (req, res) => {
                 affextedRows: 0
             })
         }
+        allResults.data = results
         res.json({
             code: 200,
-            message: results,
-            affextedRows: results.affextedRows
+            message: allResults,
         })
     })
+
 })
+// 根据userId查询房子，我发布的房子
 app.get('/api/houseById', (req, res) => {
     const pageIndex = req.query.pageIndex
     const pageSize = req.query.pageSize
@@ -173,8 +130,84 @@ app.get('/api/houseById', (req, res) => {
         })
     })
 })
-
-
+//新增住房信息
+app.post('/api/addHouse', (req, res) => {
+    const addSql = 'INSERT INTO house(houseName,userId,remark,postionX,postionY,type,money,moneyType,address) VALUES(?,?,?,?,?,?,?,?,?)'
+    const param = [req.query.houseName, req.query.userId, req.query.remark, req.query.postionX, req.query.postionY, req.query.type, req.query.money, req.query.moneyType, req.query.address]
+    connection.query(addSql, param, (err, results) => {
+        if (err) {
+            console.log('[增加失败] - ',err.message);
+            return res.json({
+                code: 1,
+                message: '添加失败',
+                affextedRows: 0
+            })
+        }
+        res.json({
+            code: 200,
+            message: '添加成功',
+            affextedRows: results.affextedRows
+        })
+    })
+})
+//修改住房信息
+app.post('/api/updateHouse', (req, res) => {
+    const param = [req.query.houseName, req.query.remark, req.query.type, req.query.money, req.query.moneyType, req.query.address, req.query.houseId]
+    const updateSql = 'UPDATE house SET houseName = ?,remark = ?,type=?,money=?,moneyType=?,address=? WHERE houseId = ?'
+    connection.query(updateSql, param, (err, results) => {
+        if (err) {
+            return res.json({
+                code: 1,
+                message: '修改失败',
+                affextedRows: 0
+            })
+        }
+        res.json({
+            code: 200,
+            message: '修改成功',
+            affextedRows: results.affextedRows
+        })
+    })
+})
+//删除住房信息
+app.post('/api/updateHouse', (req, res) => {
+    const param = [req.query.isDel]
+    const updateSql = 'UPDATE house SET isDel = ? WHERE houseId = ?'
+    connection.query(updateSql, param, (err, results) => {
+        if (err) {
+            return res.json({
+                code: 1,
+                message: '删除失败',
+                affextedRows: 0
+            })
+        }
+        res.json({
+            code: 200,
+            message: '删除成功',
+            affextedRows: results.affextedRows
+        })
+    })
+})
+//新增图片信息
+app.post('/api/addImg', (req, res) => {
+    const addSql = 'INSERT INTO houseimg(houseId,imgurl) VALUES(?,?)'
+    const param = [req.query.houseId, req.query.imgurl]
+    connection.query(addSql, param, (err, results) => {
+        if (err) {
+            console.log('[增加失败] - ',err.message);
+            return res.json({
+                code: 1,
+                message: '添加失败',
+                affextedRows: 0
+            })
+        }
+        res.json({
+            code: 200,
+            message: '添加成功',
+            affextedRows: results.affextedRows
+        })
+    })
+})
 //启动服务，端口3001
 app.listen(3001, () => {
     console.log('服务启动成功:' + `http://localhost:3001/`)
