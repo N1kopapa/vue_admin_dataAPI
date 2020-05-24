@@ -23,7 +23,6 @@ const connection = mysql.createConnection({
 })
 
 // 用户查询
-//所有用户
 app.get('/api/user', (req, res, next) => {
     const sql = 'SELECT * FROM user' //user为表名
     connection.query(sql, (err, results) => {
@@ -58,12 +57,22 @@ app.get('/api/username', (req, res, next) => {
         }
         res.json({
             code: 200,
-            message: results,
+            data: results,
             affextedRows: results.affextedRows
         })
     })
 })
 
+app.get('/api/info', (req, res, next) => {
+    res.json({
+        code: 200,
+        data: {
+            name: "Super Admin",
+            roles:['admin']
+        }
+    })
+
+})
 
 
 //房子api
@@ -136,7 +145,7 @@ app.post('/api/addHouse', (req, res) => {
     const param = [req.query.houseName, req.query.userId, req.query.remark, req.query.postionX, req.query.postionY, req.query.type, req.query.money, req.query.moneyType, req.query.address]
     connection.query(addSql, param, (err, results) => {
         if (err) {
-            console.log('[增加失败] - ',err.message);
+            console.log('[增加失败] - ', err.message);
             return res.json({
                 code: 1,
                 message: '添加失败',
@@ -194,7 +203,7 @@ app.post('/api/addImg', (req, res) => {
     const param = [req.query.houseId, req.query.imgurl]
     connection.query(addSql, param, (err, results) => {
         if (err) {
-            console.log('[增加失败] - ',err.message);
+            console.log('[增加失败] - ', err.message);
             return res.json({
                 code: 1,
                 message: '添加失败',
