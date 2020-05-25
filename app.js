@@ -24,19 +24,38 @@ const connection = mysql.createConnection({
 
 // 用户查询
 app.get('/api/user', (req, res, next) => {
-    const sql = 'SELECT * FROM user' //user为表名
+    const pageIndex = req.query.pageIndex
+    const pageSize = req.query.pageSize
+    const start = (pageIndex - 1) * pageSize
+    const end = pageIndex * pageSize
+    const sql = 'SELECT * FROM user where isDel=false limit ' + start + ',' + end;
+    const sql1 = 'SELECT COUNT(*) as num FROM user where isDel=false';
+    const allResults = {
+        total: null,
+        data: null,
+    }
+    connection.query(sql1, (err, results) => {
+        if (err) {
+            return res.json({
+                code: 200,
+                message: err,
+                affextedRows: 0
+            })
+        }
+        allResults.total = results[0].num
+    })
     connection.query(sql, (err, results) => {
         if (err) {
             return res.json({
                 code: 1,
-                message: err,
+                message: '无房屋信息',
                 affextedRows: 0
             })
         }
         res.json({
             code: 200,
             message: results,
-            affextedRows: results.affextedRows
+            total:allResults.total
         })
     })
 })
