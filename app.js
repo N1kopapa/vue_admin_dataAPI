@@ -59,7 +59,64 @@ app.get('/api/user', (req, res, next) => {
         })
     })
 })
-
+// 用户修改
+app.put('/api/user', (req, res) => {
+    const param = [req.query.actualName, req.query.email, req.query.phone, req.query.qq, req.query.sex,req.query.isDel,req.query.userId]
+    const updateSql = 'UPDATE user SET actualName = ?,email = ?,phone=?,qq=?,sex=?,isDel=? WHERE userId = ?'
+    connection.query(updateSql, param, (err, results) => {
+        if (err) {
+            return res.json({
+                code: 1,
+                message: '修改失败',
+                affextedRows: 0
+            })
+        }
+        res.json({
+            code: 200,
+            message: '修改成功',
+            affextedRows: results.affextedRows
+        })
+    })
+})
+// 用户删除
+app.put('/api/delUser', (req, res) => {
+    const param = [req.query.userId]
+    const updateSql = 'UPDATE user SET isDel=true WHERE userId = ?'
+    connection.query(updateSql, param, (err, results) => {
+        if (err) {
+            return res.json({
+                code: 1,
+                message: '修改失败',
+                affextedRows: 0
+            })
+        }
+        res.json({
+            code: 200,
+            message: '删除成功',
+            affextedRows: results.affextedRows
+        })
+    })
+})
+//新增用户
+app.post('/api/user', (req, res) => {
+    const addSql = 'INSERT INTO user(userName,passWord,actualName,sex,qq,email,phone) VALUES(?,?,?,?,?,?,?)'
+    const param = [req.query.userName, req.query.passWord, req.query.actualName, req.query.sex, req.query.qq, req.query.email, req.query.phone]
+    connection.query(addSql, param, (err, results) => {
+        if (err) {
+            console.log('[增加失败] - ', err.message);
+            return res.json({
+                code: 1,
+                message: '添加失败',
+                affextedRows: 0
+            })
+        }
+        res.json({
+            code: 200,
+            message: '添加成功',
+            affextedRows: results.affextedRows
+        })
+    })
+})
 // 登录
 app.get('/api/username', (req, res, next) => {
     const username = req.query.username
@@ -101,6 +158,7 @@ app.get('/api/house', (req, res) => {
     const pageSize = req.query.pageSize
     const start = (pageIndex - 1) * pageSize
     const end = pageIndex * pageSize
+    const param = [req.query.houseName, req.query.type, req.query.moneyType]
     const sql = 'SELECT * FROM house where isDel=false limit ' + start + ',' + end;
     const sql1 = 'SELECT COUNT(*) as num FROM house where isDel=false';
     const allResults = {
@@ -160,8 +218,8 @@ app.get('/api/houseById', (req, res) => {
 })
 //新增住房信息
 app.post('/api/addHouse', (req, res) => {
-    const addSql = 'INSERT INTO house(houseName,userId,remark,postionX,postionY,type,money,moneyType,address) VALUES(?,?,?,?,?,?,?,?,?)'
-    const param = [req.query.houseName, req.query.userId, req.query.remark, req.query.postionX, req.query.postionY, req.query.type, req.query.money, req.query.moneyType, req.query.address]
+    const addSql = 'INSERT INTO house(houseName,userId,remark,postionX,postionY,type,money,moneyType,address,img,phone) VALUES(?,1,?,?,?,?,?,?,?,?,?)'
+    const param = [req.query.houseName, req.query.remark, req.query.postionX, req.query.postionY, req.query.type, req.query.money, req.query.moneyType, req.query.address, req.query.img, req.query.phone]
     connection.query(addSql, param, (err, results) => {
         if (err) {
             console.log('[增加失败] - ', err.message);
